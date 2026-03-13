@@ -1,6 +1,6 @@
 # clpkg-irc-clients — Full Specification
 
-> Sanitized public version (internal tracker IDs and workspace paths removed).
+> Sanitized public version (internal tracker IDs removed).
 
 
 **Repo target:** Kyvero-Vexus/clpkg-irc-clients
@@ -358,4 +358,4 @@ See bead IDs created below. Execution order follows dependency chain.
 
 ## 10. Active Bead Breakdown References
 
-- `(internal-bead)` detailed execution plan: `docs/jrs-78ug-mode-state-breakdown.md`
+- `(internal-tracker)` detailed execution plan: `docs/jrs-78ug-mode-state-breakdown.md`

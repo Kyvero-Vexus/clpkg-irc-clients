@@ -1,0 +1,68 @@
+module Core.ModeTypes
+  ( ModeTarget(..)
+  , ModePolarity(..)
+  , ModeSymbolClass(..)
+  , ChannelModeAtom(..)
+  , UserModeAtom(..)
+  , ModeArg(..)
+  , ModeOperation(..)
+  , ModeDelta(..)
+  , ModeParseError(..)
+  ) where
+
+-- Consumer mapping notes:
+--   * parser emits ModeOperation list and ModeDelta envelopes.
+--   * reducer consumes ModeDelta and maps ModeParseError/TransitionError.
+
+data ModeTarget
+  = TargetChannel
+  | TargetUser
+
+data ModePolarity
+  = AddMode
+  | RemoveMode
+
+data ModeSymbolClass
+  = ChannelSymbol
+  | UserSymbol
+
+data ChannelModeAtom
+  = ChanInviteOnly
+  | ChanModerated
+  | ChanNoExternal
+  | ChanTopicLock
+  | ChanKey
+  | ChanLimit
+  | ChanBanMask
+  | ChanVoice
+  | ChanOperator
+
+data UserModeAtom
+  = UserInvisible
+  | UserWallops
+  | UserOperator
+  | UserBot
+
+data ModeArg
+  = ArgNone
+  | ArgNick String
+  | ArgMask String
+  | ArgKey String
+  | ArgLimit Int
+
+data ModeOperation
+  = ChannelModeOp ModePolarity ChannelModeAtom ModeArg
+  | UserModeOp ModePolarity UserModeAtom ModeArg
+
+data ModeDelta
+  = Delta
+      { target : ModeTarget
+      , sourceNick : String
+      , operations : List ModeOperation
+      }
+
+data ModeParseError
+  = InvalidModeTarget String
+  | UnsupportedModeSymbol String
+  | ArityMismatch String
+  | InvalidModeArgument String

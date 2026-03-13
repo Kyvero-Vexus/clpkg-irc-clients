@@ -1,0 +1,45 @@
+module Core.StateTypes
+  ( ChannelMembership(..)
+  , ChannelState(..)
+  , UserState(..)
+  , NetworkState(..)
+  , TransitionError(..)
+  ) where
+
+-- Consumer mapping notes:
+--   * parser emits parse errors and normalized mode operations.
+--   * reducer updates NetworkState and signals TransitionError deterministically.
+
+data ChannelMembership
+  = Membership
+      { nick : String
+      , isOperator : Bool
+      , hasVoice : Bool
+      }
+
+data ChannelState
+  = Channel
+      { name : String
+      , topic : Maybe String
+      , memberships : List ChannelMembership
+      }
+
+data UserState
+  = User
+      { nick : String
+      , userModes : List String
+      }
+
+data NetworkState
+  = Network
+      { channels : List ChannelState
+      , users : List UserState
+      }
+
+data TransitionError
+  = InvalidTransitionTarget String
+  | TransitionArityMismatch String
+  | UnsupportedTransitionSymbol String
+  | MissingChannelState String
+  | MissingMembership String
+  | MissingUserState String
