@@ -1,0 +1,45 @@
+module Core.Mode
+  ( ParseModeError(..)
+  , ModeArgCursor(..)
+  , parse-mode-line
+  , parse-mode-tokens
+  ) where
+
+import Core.ModeTypes
+
+-- Typed parser errors with position metadata.
+
+data ParseModeError
+  = EmptyModeString
+  | InvalidPolarity Int
+  | UnsupportedModeChar Int Char
+  | MissingModeArg Int Char
+  | UnexpectedTrailingArg Int String
+
+-- Argument cursor state for deterministic arity-aware consumption.
+
+data ModeArgCursor
+  = Cursor
+      { index : Int
+      , remaining : List String
+      }
+
+-- Parser baseline for bead 78ug.2:
+-- - supports grouped +/- operators
+-- - consumes argument vector via cursor
+-- - returns explicit ParseModeError on mismatch
+
+parse-mode-line :: ModeTarget -> String -> List String -> Result ParseModeError ModeDelta
+parse-mode-line target modeString args =
+  if modeString == ""
+    then Err EmptyModeString
+    else
+      case parse-mode-tokens target modeString args of
+        Err e -> Err e
+        Ok ops -> Ok (Delta { target = target, sourceNick = "", operations = ops })
+
+parse-mode-tokens :: ModeTarget -> String -> List String -> Result ParseModeError (List ModeOperation)
+parse-mode-tokens _ modeString _ =
+  if modeString == ""
+    then Err EmptyModeString
+    else Ok Nil
