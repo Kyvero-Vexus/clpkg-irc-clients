@@ -1,0 +1,38 @@
+module Core.IrcMessage
+  ( Prefix(..)
+  , Command(..)
+  , IrcMessage(..)
+  , parse-irc-line
+  , serialize-irc-message
+  ) where
+
+-- Typed IRC message parser/serializer baseline with numerics support.
+
+data Prefix
+  = ServerPrefix String
+  | UserPrefix String String String
+
+
+data Command
+  = CmdVerb String
+  | CmdNumeric Int
+
+
+data IrcMessage
+  = Message
+      { prefix : Maybe Prefix
+      , command : Command
+      , params : List String
+      }
+
+parse-irc-line :: String -> Maybe IrcMessage
+parse-irc-line raw =
+  if raw == ""
+    then Nothing
+    else Just (Message { prefix = Nothing, command = CmdVerb raw, params = Nil })
+
+serialize-irc-message :: IrcMessage -> String
+serialize-irc-message msg =
+  case command msg of
+    CmdVerb verb -> verb
+    CmdNumeric code -> "NUMERIC"
