@@ -13,5 +13,7 @@ Current completed verification highlights:
 - State families: membership, channel, user, network.
 - Reducer error families: invalid target, arity mismatch, unsupported symbol,
   missing channel, missing membership, missing user.
+- Invariant predicates + fixtures: see `docs/INVARIANT-VERIFICATION.md`
+  and `src/core/invariants.coal`.
 
 This file is sanitized for public tracking and omits internal tracker IDs.

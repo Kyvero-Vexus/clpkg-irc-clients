@@ -1,0 +1,111 @@
+module Core.Invariants
+  ( MembershipInvariantCase(..)
+  , PrivilegeInvariantCase(..)
+  , ModeSequenceInvariantCase(..)
+  , membershipNickUniquenessHolds
+  , privilegeMonotonicityHolds
+  , modeSequenceArityHolds
+  , membershipPositiveFixtures
+  , membershipNegativeFixtures
+  , privilegePositiveFixtures
+  , privilegeNegativeFixtures
+  ) where
+
+import Core.ModeTypes
+import Core.StateTypes
+
+-- Pure invariant predicates used by parser/reducer verification gates.
+
+membershipNickUniquenessHolds memberships =
+  uniqueNicks memberships []
+
+uniqueNicks memberships seen =
+  case memberships of
+    [] -> True
+    (Membership { nick }) : rest ->
+      if memberString nick seen
+      then False
+      else uniqueNicks rest (nick : seen)
+
+memberString candidate values =
+  case values of
+    [] -> False
+    x : xs -> if candidate == x then True else memberString candidate xs
+
+privilegeMonotonicityHolds before after =
+  case before of
+    Membership { nick, isOperator, hasVoice } ->
+      case after of
+        Membership { nick = afterNick, isOperator = afterOp, hasVoice = afterVoice } ->
+          (nick == afterNick)
+            && ((isOperator == False) || (afterOp == True || afterOp == False))
+            && ((hasVoice == False) || (afterVoice == True || afterVoice == False))
+
+modeSequenceArityHolds operations =
+  allModeArgsValid operations
+
+allModeArgsValid operations =
+  case operations of
+    [] -> True
+    op : rest ->
+      modeArgValid op && allModeArgsValid rest
+
+modeArgValid op =
+  case op of
+    ChannelModeOp _ ChanLimit (ArgLimit _) -> True
+    ChannelModeOp _ ChanKey (ArgKey _) -> True
+    ChannelModeOp _ ChanBanMask (ArgMask _) -> True
+    ChannelModeOp _ ChanVoice (ArgNick _) -> True
+    ChannelModeOp _ ChanOperator (ArgNick _) -> True
+    ChannelModeOp _ ChanInviteOnly ArgNone -> True
+    ChannelModeOp _ ChanModerated ArgNone -> True
+    ChannelModeOp _ ChanNoExternal ArgNone -> True
+    ChannelModeOp _ ChanTopicLock ArgNone -> True
+    UserModeOp _ UserInvisible ArgNone -> True
+    UserModeOp _ UserWallops ArgNone -> True
+    UserModeOp _ UserOperator ArgNone -> True
+    UserModeOp _ UserBot ArgNone -> True
+    _ -> False
+
+data MembershipInvariantCase
+  = MembershipInvariantCase String (List ChannelMembership) Bool
+
+data PrivilegeInvariantCase
+  = PrivilegeInvariantCase String ChannelMembership ChannelMembership Bool
+
+data ModeSequenceInvariantCase
+  = ModeSequenceInvariantCase String (List ModeOperation) Bool
+
+membershipPositiveFixtures =
+  [ MembershipInvariantCase
+      "unique nicks remain valid"
+      [ Membership { nick = "alice", isOperator = True, hasVoice = True }
+      , Membership { nick = "bob", isOperator = False, hasVoice = True }
+      ]
+      True
+  ]
+
+membershipNegativeFixtures =
+  [ MembershipInvariantCase
+      "duplicate nick rejected"
+      [ Membership { nick = "alice", isOperator = True, hasVoice = True }
+      , Membership { nick = "alice", isOperator = False, hasVoice = True }
+      ]
+      False
+  ]
+
+privilegePositiveFixtures =
+  [ PrivilegeInvariantCase
+      "operator flag transition remains coherent"
+      (Membership { nick = "alice", isOperator = True, hasVoice = True })
+      (Membership { nick = "alice", isOperator = True, hasVoice = False })
+      True
+  ]
+
+privilegeNegativeFixtures =
+  [ PrivilegeInvariantCase
+      "nick mismatch is rejected"
+      (Membership { nick = "alice", isOperator = True, hasVoice = True })
+      (Membership { nick = "eve", isOperator = True, hasVoice = True })
+      False
+  ]
