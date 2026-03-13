@@ -1,0 +1,55 @@
+module Core.CapSasl
+  ( CapState(..)
+  , SaslState(..)
+  , CapEvent(..)
+  , SaslEvent(..)
+  , step-cap
+  , step-sasl
+  ) where
+
+-- Typed CAP negotiation and SASL state machines.
+
+data CapState
+  = CapIdle
+  | CapLsReceived
+  | CapReqSent
+  | CapNegotiated
+  | CapEnded
+
+
+data SaslState
+  = SaslIdle
+  | SaslAuthStarted
+  | SaslChallenge
+  | SaslSuccess
+  | SaslFailure
+
+
+data CapEvent
+  = EvCapLs
+  | EvCapReq
+  | EvCapAck
+  | EvCapEnd
+
+
+data SaslEvent
+  = EvSaslAuth
+  | EvSaslChallenge
+  | EvSaslOk
+  | EvSaslFail
+
+step-cap :: CapEvent -> CapState -> CapState
+step-cap event state =
+  case event of
+    EvCapLs -> CapLsReceived
+    EvCapReq -> CapReqSent
+    EvCapAck -> CapNegotiated
+    EvCapEnd -> CapEnded
+
+step-sasl :: SaslEvent -> SaslState -> SaslState
+step-sasl event state =
+  case event of
+    EvSaslAuth -> SaslAuthStarted
+    EvSaslChallenge -> SaslChallenge
+    EvSaslOk -> SaslSuccess
+    EvSaslFail -> SaslFailure
