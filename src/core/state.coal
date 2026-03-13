@@ -1,0 +1,49 @@
+module Core.State
+  ( IrcEvent(..)
+  , empty-network
+  , apply-mode-delta
+  , reduce-event
+  , reduce-events
+  ) where
+
+import Core.ModeTypes
+import Core.StateTypes
+
+-- Reducer event envelope for JOIN/PART/QUIT/NICK/MODE flows.
+
+data IrcEvent
+  = EvJoin String String          -- channel nick
+  | EvPart String String          -- channel nick
+  | EvQuit String                 -- nick
+  | EvNick String String          -- old new
+  | EvMode ModeDelta              -- parsed mode delta
+
+empty-network :: NetworkState
+empty-network = Network { channels = Nil, users = Nil }
+
+-- Initial deterministic mode application baseline.
+-- Detailed membership/privilege mutation logic is expanded in 78ug.4 fixtures.
+
+apply-mode-delta :: ModeDelta -> NetworkState -> Result TransitionError NetworkState
+apply-mode-delta delta state =
+  case target delta of
+    TargetChannel -> Ok state
+    TargetUser -> Ok state
+
+reduce-event :: IrcEvent -> NetworkState -> Result TransitionError NetworkState
+reduce-event event state =
+  case event of
+    EvJoin _ _ -> Ok state
+    EvPart _ _ -> Ok state
+    EvQuit _ -> Ok state
+    EvNick _ _ -> Ok state
+    EvMode delta -> apply-mode-delta delta state
+
+reduce-events :: List IrcEvent -> NetworkState -> Result TransitionError NetworkState
+reduce-events events state =
+  case events of
+    Nil -> Ok state
+    Cons e rest ->
+      case reduce-event e state of
+        Err err -> Err err
+        Ok next -> reduce-events rest next
