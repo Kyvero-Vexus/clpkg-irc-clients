@@ -6,9 +6,11 @@ module Core.StateTypes
   , TransitionError(..)
   ) where
 
--- Consumer mapping notes:
---   * parser emits parse errors and normalized mode operations.
---   * reducer updates NetworkState and signals TransitionError deterministically.
+-- Consumer mapping notes (parser -> reducer):
+--   * ChannelMembership / ChannelState model reducer-owned membership/channel snapshots.
+--   * UserState stores user-mode projection built from parsed mode operations.
+--   * NetworkState is reducer's top-level immutable transition input/output.
+--   * TransitionError is deterministic reducer failure output (target/arity/symbol/state axes).
 
 data ChannelMembership
   = Membership

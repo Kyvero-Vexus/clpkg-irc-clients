@@ -10,9 +10,12 @@ module Core.ModeTypes
   , ModeParseError(..)
   ) where
 
--- Consumer mapping notes:
---   * parser emits ModeOperation list and ModeDelta envelopes.
---   * reducer consumes ModeDelta and maps ModeParseError/TransitionError.
+-- Consumer mapping notes (parser -> reducer):
+--   * ModeTarget / ModeSymbolClass choose parser branch and reducer dispatch lane.
+--   * ModePolarity + ChannelModeAtom/UserModeAtom + ModeArg form each parsed op payload.
+--   * ModeOperation is emitted by parser and reduced exhaustively by transition logic.
+--   * ModeDelta is the parser envelope consumed directly by reducer apply entrypoint.
+--   * ModeParseError is parser failure output forwarded to reducer/interop boundary.
 
 data ModeTarget
   = TargetChannel
