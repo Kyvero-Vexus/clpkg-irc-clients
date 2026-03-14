@@ -1,0 +1,34 @@
+module Core.CtcpTags
+  ( CtcpMessage(..)
+  , MessageTag(..)
+  , parse-ctcp
+  , format-ctcp
+  , parse-message-tags
+  , serialize-message-tags
+  ) where
+
+-- Typed CTCP and IRCv3 message tags.
+
+data CtcpMessage
+  = Ctcp
+      { ctcpCommand : String
+      , ctcpArgs : Maybe String
+      }
+
+data MessageTag
+  = Tag
+      { tagKey : String
+      , tagValue : Maybe String
+      }
+
+parse-ctcp :: String -> Maybe CtcpMessage
+parse-ctcp _ = Nothing
+
+format-ctcp :: CtcpMessage -> String
+format-ctcp msg = ctcpCommand msg
+
+parse-message-tags :: String -> List MessageTag
+parse-message-tags _ = Nil
+
+serialize-message-tags :: List MessageTag -> String
+serialize-message-tags _ = ""
